@@ -1,6 +1,6 @@
 # 📈 xray-stock
 
-> 실시간 주식 시스템을 기술적 구현을 함께 고민하는 개발자 스터디
+> 실시간 주식 시스템을 함께 고민하는 개발자 스터디
 
 ---
 
@@ -17,86 +17,86 @@
 
 ## 🏗 시스템 아키텍처
 
-`xray-stock`은 다음과 같은 구조로 구성됩니다:
+```mermaid
+graph LR
+    A[📦 stock-generator<br/>시세 시뮬레이션] -->|Redis Pub| B[⚙️ stock-service<br/>시세 처리, 체결]
+    B -->|WebSocket| C[🖥️ Web Viewer<br/>실시간 UI]
+````
 
-```
+### 구성 요약
 
-\[ 시세 발생기 ]
-|
-v
-\[ 주식 서비스 서버 ]
-|
-v
-\[ 뷰어 웹 페이지 ]
+* **📦 stock-generator**
+  @slicequeue이 구현. 랜덤 주식 데이터를 Redis Pub/Sub으로 퍼블리시하는 시뮬레이터
 
-```
+* **⚙️ stock-service**
+  @slicequeue이 구현. 시세 수신, 종목 관리, 체결 처리, 브로드캐스트 등 메인 비즈니스 로직 담당
 
-- **stock-generator**: 가상의 주식 데이터를 시뮬레이션하고 Redis Pub/Sub을 통해 퍼블리시합니다.
-- **stock-service**: Redis로부터 시세를 수신하고, 종목 관리/체결/브로드캐스팅/DB저장 등의 핵심 로직을 담당합니다.
-- **(예정) 웹 뷰어**: 실시간 시세 및 체결 정보를 소켓을 통해 보여주는 시각화 페이지입니다.
+* **🧪 choru-stock-mock**
+  @choru90이 구현. 체결 흐름과 메시지 처리 구조를 실험하는 개인 실습 서버
 
-우리는 단순한 코드 작성이 아닌, **실제 시스템이 갖춰야 할 설계 요소들** — 이벤트 흐름, 메시지 정합성, 트래픽 대응 등을 고민하며 구조를 함께 다듬어가고 있습니다.
+* **🖥️ 웹 클라이언트 (예정)**
+  실시간 시세 및 체결 데이터를 시각화하는 뷰어. Socket 기반 통신 예정
 
 ---
 
 ## 🧩 Repository 구성
 
-| Repository | 설명 |
-|------------|------|
-| [`stock-generator`](https://github.com/xray-stock/xray-stock-generator-sq) | 가상의 시세 데이터를 시뮬레이션하고 Redis에 퍼블리시하는 서비스 |
-| [`stock-service`](https://github.com/xray-stock/xray-stock-service-sq) | 실시간 시세, 종목 관리, 체결 이벤트 등을 처리하는 핵심 백엔드 서비스 |
-| [`choru-stock-mock`](https://github.com/xray-stock/choru-stock-mock) | 체결 흐름과 메시지 처리 구조를 실험해보는 개인 실습 리포지토리 |
-| (예정) `stock-client` | 실시간 소켓 기반의 체결 확인 및 차트 UI 구성 |
+| 담당자           | 리포지토리                                                                      | 설명                                                                    |
+| ------------- | -------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| `@slicequeue` | [`stock-generator`](https://github.com/xray-stock/xray-stock-generator-sq) | `@slicequeue`이 구현한 **시세 발생기**. Redis에 랜덤 주식 데이터를 퍼블리시합니다.             |
+| `@slicequeue` | [`stock-service`](https://github.com/xray-stock/xray-stock-service-sq)     | `@slicequeue`이 구현한 **주식 서비스 서버**. 시세 수신, 종목 관리, 체결 처리 및 실시간 브로드캐스트 담당 |
+| `@choru90`    | [`choru-stock-mock`](https://github.com/xray-stock/choru-stock-mock)       | `@choru90`이 구현한 **체결 흐름 실험 서버**. 메시지 처리 로직과 흐름을 테스트하는 실습용 환경          |
 
 ---
 
 ## 💡 Why 'xray'?
 
-엑스레이는 **보이지 않는 것을 투시**해 보여줍니다.  
+엑스레이는 **보이지 않는 것을 투시**해 보여줍니다.
 `xray-stock` 스터디도 겉으로 보이지 않는 시스템의 내부를 깊이 파고들어, **기술의 본질을 꿰뚫는 시선**을 지향합니다.
 
 ---
 
 ## 🔍 Topics We Explore
 
-- Event-driven architecture
-- Redis Pub/Sub & Kafka
-- Spring Boot + MongoDB + RDB 혼합 설계
-- 실시간 socket 인증과 통신 구조
-- 주식 시장의 서킷 브레이커, 상·하한가 시스템
-- 개발 생산성 향상 및 테스트 전략
+* Event-driven architecture
+* Redis Pub/Sub & Kafka
+* Spring Boot + MongoDB + RDB 혼합 설계
+* 실시간 socket 인증과 통신 구조
+* 주식 시장의 서킷 브레이커, 상·하한가 시스템
+* 개발 생산성 향상 및 테스트 전략
 
 ---
 
 ## 📊 실시간 시스템 참고 자료 정리
 
-- 🎥 [토스ㅣSLASH 22 - 애플 한 주가 고객에게 전달되기까지](https://www.youtube.com/watch?v=46QkQJGMv4I)  
+* 🎥 [토스ㅣSLASH 22 - 애플 한 주가 고객에게 전달되기까지](https://www.youtube.com/watch?v=46QkQJGMv4I)
   *주식 매매 체결 처리, 대기열, 정합성 보장, 메시지 큐 사용 등 실제 증권 시스템에서의 고민과 구조 공유*
 
-- 🎥 [토스ㅣSLASH 22 - 토스증권 실시간 시세 적용기](https://www.youtube.com/watch?v=tldwm64CUTo)  
+* 🎥 [토스ㅣSLASH 22 - 토스증권 실시간 시세 적용기](https://www.youtube.com/watch?v=tldwm64CUTo)
   *Kafka, 웹소켓 기반의 실시간 시세 전달, 성능 튜닝 및 시스템 아키텍처 소개*
 
 ---
 
 ## ⏰ 스터디 운영 방식
 
-- **일요일 아침 조기 코딩**을 기본으로 합니다 ☀️
-- 각자의 리포지토리에서 기능을 개발하고, 메인 레포로 PR을 보내며 코드 리뷰를 중심으로 피드백합니다
-- 서로의 구조, 방식, 개선 아이디어를 나누며 실제 서비스를 만드는 과정을 즐깁니다
+* 우리는 **일요일 아침 조기 코딩**을 합니다.
+  야임마 조기 축구 아니고 **조기 코딩**이다 🧑‍💻☀️
+  나른한 주말 늦잠을 포기하고 키보드를 붙잡는, 그런 사람들입니다.
+* 각자의 리포지토리에서 기능을 개발하고, 메인 레포로 PR을 보내며 코드 리뷰를 중심으로 피드백합니다
+* 서로의 구조, 방식, 개선 아이디어를 나누며 실제 서비스를 만드는 과정을 즐깁니다
 
 ---
 
 ## 👥 참여자
 
-| GitHub | 담당 리포지토리 |
-|--------|-----------------|
-| [`@slicequeue`](https://github.com/orgs/xray-stock/people/slicequeue) | [`stock-service`](https://github.com/xray-stock/xray-stock-service-sq), [`stock-generator`](https://github.com/xray-stock/xray-stock-generator-sq) |
-| [`@choru90`](https://github.com/orgs/xray-stock/people/choru90) | [`choru-stock-mock`](https://github.com/xray-stock/choru-stock-mock) |
+* [`@slicequeue`](https://github.com/slicequeue)
+* [`@choru90`](https://github.com/choru90)
 
 ---
 
 ## 🍿 Fun Fact
 
-- 첫 종목은 무려 **삼성전자**, 지금은 미국 **테슬라** 진행 중...  
-- 매주 일요일 아침, 졸린 눈 비비며 조기 축구가 아닌 **조기 코딩**에 뛰어드는 코딩 모임입니다 ⚽⚽🧑‍💻🧑‍💻
-- 이따금씩 **"이거 실서비스에서도 이렇게 될까?"** 같은 깊은 토론이 벌어지기도 합니다
+* 첫 종목은 무려 **삼성전자**, 지금은 미국 **테슬라** 진행 중...
+* 매주 일요일 아침, 졸린 눈 비비며 조기 축구가 아닌 **조기 코딩**에 뛰어드는 코딩 모임입니다 ⚽⚽🧑‍💻🧑‍💻
+* 이따금씩 **"이거 실서비스에서도 이렇게 될까?"** 같은 깊은 토론이 벌어지기도 합니다
+
