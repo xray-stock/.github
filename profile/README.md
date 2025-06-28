@@ -7,7 +7,7 @@
 ## 🙋‍♂️ About Us
 
 **xray-stock**은 실시간 주식 데이터 처리 시스템을 직접 구현하고 분석해보는 개발자 중심의 스터디입니다.  
-실제 주식 시장의 아키텍처, 데이터 흐름, 성능 문제, 거래의 신뢰성 등을 고민하며 **"어떻게 돌아가는가?"**에서 출발해  
+실제 주식 시장의 아키텍처, 데이터 흐름, 성능 문제, 거래의 신뢰성 등을 고민하며 **어떻게 돌아가는가?**에서 출발해  
 **"직접 만들어보자"**를 목표로 합니다.
 
 우리가 만드는 시스템이 실제 증권사만큼 완벽하지는 않더라도,  
@@ -19,23 +19,34 @@
 
 ```mermaid
 graph LR
-    A[📦 stock-generator<br/>시세 시뮬레이션] -->|Redis Pub| B[⚙️ stock-service<br/>시세 처리, 체결]
-    B -->|WebSocket| C[🖥️ Web Viewer<br/>실시간 UI]
+    A[📦 stock-generator<br/>시세 시뮬레이터] -->|현재: REST API<br/>향후: Kafka 등| B[⚙️ stock-service<br/>시세 처리 / 체결 서버]
+    B -->|WebSocket<br/>실시간 체결 전파| C[🖥️ Web Viewer]
+    C -->|REST API<br/>초기 종목/체결 조회| B
 ````
 
 ### 구성 요약
 
 * **📦 stock-generator**
-  @slicequeue이 구현. 랜덤 주식 데이터를 Redis Pub/Sub으로 퍼블리시하는 시뮬레이터
+  @slicequeue이 구현. 가상의 주식 데이터를 생성
+
+  * 현재는 stock-service로 **REST API 호출 방식의 라운드 로빈 전달**
+  * 추후 Kafka 또는 Redis Stream 기반 **Producer → Consumer 구조**로 전환 예정
 
 * **⚙️ stock-service**
-  @slicequeue이 구현. 시세 수신, 종목 관리, 체결 처리, 브로드캐스트 등 메인 비즈니스 로직 담당
+  @slicequeue이 구현.
 
-* **🧪 choru-stock-mock**
-  @choru90이 구현. 체결 흐름과 메시지 처리 구조를 실험하는 개인 실습 서버
+  * 시세 수신 및 체결 처리
+  * Redis Pub/Sub 또는 Kafka 기반 수신 준비
+  * 체결 결과를 WebSocket으로 Web Viewer에 브로드캐스트
+  * 종목/체결 초기 정보는 REST API로 제공
 
-* **🖥️ 웹 클라이언트 (예정)**
-  실시간 시세 및 체결 데이터를 시각화하는 뷰어. Socket 기반 통신 예정
+* **🖥️ Web Viewer (예정)**
+
+  * 실시간 체결 정보: **WebSocket 구독**
+  * 초기 종목 목록/체결 히스토리: **REST API 호출**
+
+> 이처럼 실시간성과 초기 정합성을 동시에 고려하여,
+> **Socket + REST Hybrid 구조**로 Viewer 통신을 구성합니다.
 
 ---
 
@@ -99,4 +110,3 @@ graph LR
 * 첫 종목은 무려 **삼성전자**, 지금은 미국 **테슬라** 진행 중...
 * 매주 일요일 아침, 졸린 눈 비비며 조기 축구가 아닌 **조기 코딩**에 뛰어드는 코딩 모임입니다 ⚽⚽🧑‍💻🧑‍💻
 * 이따금씩 **"이거 실서비스에서도 이렇게 될까?"** 같은 깊은 토론이 벌어지기도 합니다
-
